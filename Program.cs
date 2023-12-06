@@ -1,6 +1,7 @@
 using Service1.Models;
 using Microsoft.EntityFrameworkCore;
 
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
 namespace Service1
 {
@@ -8,6 +9,9 @@ namespace Service1
     {
         public static void Main(string[] args)
         {
+
+            log4net.Config.XmlConfigurator.Configure();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.

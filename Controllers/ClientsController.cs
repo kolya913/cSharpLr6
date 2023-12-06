@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Service1.Models;
 using System.Net.Http;
 using System.Text.Json;
+using log4net;
+using log4net.Config;
 
 namespace Service1.Controllers
 {
@@ -15,6 +17,7 @@ namespace Service1.Controllers
     [ApiController]
     public class ClientsController : ControllerBase
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ClientsController));
         private readonly ClientContext _context;
 
         public ClientsController(ClientContext context)
@@ -26,29 +29,64 @@ namespace Service1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Client>>> GetClients()
         {
-          if (_context.Clients == null)
-          {
-              return NotFound();
-          }
-            return await _context.Clients.ToListAsync();
+            try
+            {
+                log.Info($"GET /api/Clients - Start Time: {DateTime.Now}");
+
+                if (_context.Clients == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"GET /api/Clients - End Time: {DateTime.Now}");
+                    return NotFound();
+                }
+
+                log.Info("Correctly");
+                var clients = await _context.Clients.ToListAsync();
+
+                log.Info($"GET /api/Clients - End Time: {DateTime.Now}");
+                return clients;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"GET /api/Clients - Exception: {ex.Message}");
+                log.Info($"GET /api/Clients - End Time: {DateTime.Now}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+            }
         }
 
         // GET: api/Clients/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Client>> GetClient(int id)
         {
-          if (_context.Clients == null)
-          {
-              return NotFound();
-          }
-            var client = await _context.Clients.FindAsync(id);
-
-            if (client == null)
+            try
             {
-                return NotFound();
-            }
+                log.Info($"GET /api/Clients/{id} - Start Time: {DateTime.Now}");
 
-            return client;
+                if (_context.Clients == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"GET /api/Clients/{id} - End Time: {DateTime.Now}");
+                    return NotFound();
+                }
+
+                var client = await _context.Clients.FindAsync(id);
+
+                if (client == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"GET /api/Clients/{id} - End Time: {DateTime.Now}");
+                    return NotFound();
+                }
+                log.Info("Correctly");
+                log.Info($"GET /api/Clients/{id} - End Time: {DateTime.Now}");
+                return client;
+            }
+            catch (Exception ex)
+            {
+                log.Error($"GET /api/Clients/{id} - Exception: {ex.Message}");
+                log.Info($"GET /api/Clients/{id} - End Time: {DateTime.Now}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+            }
         }
 
         // PUT: api/Clients/5
@@ -56,30 +94,30 @@ namespace Service1.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutClient(int id, Client client)
         {
-            if (id != client.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(client).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ClientExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                log.Info($"PUT /api/Clients/{id} - Start Time: {DateTime.Now}");
 
-            return NoContent();
+                if (id != client.Id)
+                {
+                    log.Error("Not found");
+                    log.Info($"PUT /api/Clients/{id} - End Time: {DateTime.Now}");
+                    return BadRequest();
+                }
+
+                _context.Entry(client).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+                log.Info("Correctly");
+                log.Info($"PUT /api/Clients/{id} - End Time: {DateTime.Now}");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"PUT /api/Clients/{id} - Exception: {ex.Message}");
+                log.Info($"PUT /api/Clients/{id} - End Time: {DateTime.Now}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+            }
         }
 
         // POST: api/Clients
@@ -87,34 +125,67 @@ namespace Service1.Controllers
         [HttpPost]
         public async Task<ActionResult<Client>> PostClient(Client client)
         {
-          if (_context.Clients == null)
-          {
-              return Problem("Entity set 'ClientContext.Clients'  is null.");
-          }
-            _context.Clients.Add(client);
-            await _context.SaveChangesAsync();
+            try
+            {
+                log.Info($"POST /api/Clients - Start Time: {DateTime.Now}");
 
-            return CreatedAtAction("GetClient", new { id = client.Id }, client);
+                if (_context.Clients == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"POST /api/Clients - Start Time: {DateTime.Now}");
+                    return Problem("Entity set 'ClientContext.Clients'  is null.");
+                }
+
+                _context.Clients.Add(client);
+                await _context.SaveChangesAsync();
+                log.Info("Correctly");
+                log.Info($"POST /api/Clients - End Time: {DateTime.Now}");
+                return CreatedAtAction("GetClient", new { id = client.Id }, client);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"POST /api/Clients - Exception: {ex.Message}");
+                log.Info($"POST /api/Clients - Start Time: {DateTime.Now}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
+            }
         }
 
         // DELETE: api/Clients/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClient(int id)
         {
-            if (_context.Clients == null)
+            try
             {
-                return NotFound();
+                log.Info($"DELETE /api/Clients/{id} - Start Time: {DateTime.Now}");
+
+                if (_context.Clients == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"DELETE /api/Clients/{id} - Start Time: {DateTime.Now}");
+                    return NotFound();
+                }
+
+                var client = await _context.Clients.FindAsync(id);
+
+                if (client == null)
+                {
+                    log.Error("Not found");
+                    log.Info($"DELETE /api/Clients/{id} - Start Time: {DateTime.Now}");
+                    return NotFound();
+                }
+
+                _context.Clients.Remove(client);
+                await _context.SaveChangesAsync();
+                log.Info("Correctly");
+                log.Info($"DELETE /api/Clients/{id} - End Time: {DateTime.Now}");
+                return NoContent();
             }
-            var client = await _context.Clients.FindAsync(id);
-            if (client == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                log.Error($"DELETE /api/Clients/{id} - Exception: {ex.Message}");
+                log.Info($"DELETE /api/Clients/{id} - Start Time: {DateTime.Now}");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Internal Server Error");
             }
-
-            _context.Clients.Remove(client);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         private bool ClientExists(int id)
